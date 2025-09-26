@@ -29,8 +29,9 @@ mail.init_app(app)
 api = Api(app)
 
 # Import namespaces AFTER api is created
-from routes import auth_ns  
+from routes import auth_ns, admin_ns  
 api.add_namespace(auth_ns, path="/auth")
+api.add_namespace(admin_ns, path="/admin")
 
 if __name__ == "__main__":
     with app.app_context():
