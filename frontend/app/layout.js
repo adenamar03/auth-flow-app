@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Auth Flow RBAC',
+  title: 'Authentication flow Role based Access',
   description: 'Basic authentication with role-based access',
 };
 
