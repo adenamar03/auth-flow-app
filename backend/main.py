@@ -1,10 +1,9 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy  #ORM
-from flask_jwt_extended import JWTManager #for secure login, rb access, and protecting routes
-from flask_mail import Mail
 from flask_restx import Api
 from dotenv import load_dotenv
 import os
+
+from extensions import db, jwt, mail   # import our extensions
 
 # Load .env
 load_dotenv()
@@ -21,13 +20,19 @@ app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
 app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
 app.config['MAIL_USE_TLS'] = True
 
-# Extensions
-db = SQLAlchemy(app)
-jwt = JWTManager(app)
-mail = Mail(app)
+# Init extensions
+db.init_app(app)
+jwt.init_app(app)
+mail.init_app(app)
+
+# Create API
 api = Api(app)
 
-#import routes
+# Import namespaces AFTER api is created
+from routes import auth_ns  
+api.add_namespace(auth_ns, path="/auth")
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()  # ensure tables are created
     app.run(debug=True)

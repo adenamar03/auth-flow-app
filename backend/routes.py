@@ -1,15 +1,16 @@
-from flask_restx import Resource, fields 
+from flask_restx import Resource, fields, Namespace
 from flask_mail import Message
 from werkzeug.security import generate_password_hash
-from itsdangerous import URLSafeTimedSerializer #time-limited tokens
-from main import app, db, mail, api
-from models import User
+from itsdangerous import URLSafeTimedSerializer
 
-serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"]) #securely generate tokens and OTPs that can expire
+from extensions import db, mail
+from models import User
+from flask import current_app
+
+auth_ns = Namespace("auth", description="Authentication APIs")
 
 # Models for API docs
-#fields a user must provide to register
-register_model = api.model("Register", { 
+register_model = auth_ns.model("Register", { 
     "profile_pic": fields.String,
     "first_name": fields.String(required=True),
     "last_name": fields.String(required=True),
@@ -17,48 +18,51 @@ register_model = api.model("Register", {
     "password": fields.String(required=True),
     "mobile": fields.String
 })
-#fields needed to verify OTP (otp + token)
-verify_model = api.model("Verify", {
+
+verify_model = auth_ns.model("Verify", {
     "otp": fields.String(required=True),
     "token": fields.String(required=True)
 })
 
-# In-memory pending registrations
-pending_users = {} #stores users who started registration but haven’t verified OTP yet
+pending_users = {}
 
-@api.route("/register") #Accepts POST requests with registration data
+def get_serializer():
+    """Helper to create serializer inside app context"""
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+
+@auth_ns.route("/register")
 class Register(Resource):
-    @api.expect(register_model)
+    @auth_ns.expect(register_model)
     def post(self):
-        data = api.payload
+        data = auth_ns.payload
         if User.query.filter_by(email=data["email"]).first():
             return {"message": "User already exists"}, 400
         
-        # Generate OTP
-        otp = serializer.dumps(data["email"], salt="otp-salt")[:6] #first 6 characters of a serialized email like act as a 1 time pass
-        token = serializer.dumps(data, salt="register-salt") #string containing all registration data, used to verify user later
+        serializer = get_serializer()
+        otp = serializer.dumps(data["email"], salt="otp-salt")[:6]
+        token = serializer.dumps(data, salt="register-salt")
 
-        # Save temporarily
         pending_users[data["email"]] = {"otp": otp, "data": data}
 
-        # Send email
-        msg = Message("OTP Verification", sender=app.config["MAIL_USERNAME"], recipients=[data["email"]])
+        msg = Message("OTP Verification",
+                      sender=current_app.config["MAIL_USERNAME"],
+                      recipients=[data["email"]])
         msg.body = f"Your OTP is {otp}"
         mail.send(msg)
 
         return {"message": "OTP sent", "token": token}
 
 
-@api.route("/verify-otp")
-class VerifyOTP(Resource): #Verifies user registration before creating an account
-    @api.expect(verify_model)
+@auth_ns.route("/verify-otp")
+class VerifyOTP(Resource):
+    @auth_ns.expect(verify_model)
     def post(self):
-        data = api.payload
+        data = auth_ns.payload
+        serializer = get_serializer()
         try:
-            pending_data = serializer.loads(data["token"], salt="register-salt", max_age=600) #decodes the token securely, exract user email and reg info
+            pending_data = serializer.loads(data["token"], salt="register-salt", max_age=600)
             email = pending_data["email"]
-            
-            # Validate OTP
+
             if pending_users[email]["otp"] != data["otp"]:
                 return {"message": "Invalid OTP"}, 400
 
@@ -79,3 +83,4 @@ class VerifyOTP(Resource): #Verifies user registration before creating an accoun
             return {"message": "Registered successfully"}
         except Exception as e:
             return {"message": f"Error: {str(e)}"}, 400
+
