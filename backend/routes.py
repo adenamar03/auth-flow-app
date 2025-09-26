@@ -1,23 +1,23 @@
-from flask_restx import Resource, fields, Namespace
+from flask_restx import Namespace, Resource, fields
 from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
+from flask import request, current_app
+from werkzeug.utils import secure_filename
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from functools import wraps
+import os
+import random
+import string
 
 from extensions import db, mail
 from models import User
-from flask import current_app
-
-from flask_jwt_extended import (
-    create_access_token, create_refresh_token,
-    jwt_required, get_jwt_identity
-)
-from functools import wraps
 
 auth_ns = Namespace("auth", description="Authentication APIs")
 admin_ns = Namespace("admin", description="Admin operations")
 
-# Models for API docs
-register_model = auth_ns.model("Register", { 
+# Models (unchanged)
+register_model = auth_ns.model("Register", {
     "profile_pic": fields.String,
     "first_name": fields.String(required=True),
     "last_name": fields.String(required=True),
@@ -28,18 +28,22 @@ register_model = auth_ns.model("Register", {
 
 verify_model = auth_ns.model("Verify", {
     "otp": fields.String(required=True),
-    "token": fields.String(required=True)
+    "token": fields.String(required=True),
+    "user_data": fields.Nested(auth_ns.model("UserData", {
+        "email": fields.String(required=True),
+        "first_name": fields.String(required=True),
+        "last_name": fields.String(required=True),
+        "password": fields.String(required=True),
+        "mobile": fields.String,
+        "profile_pic": fields.String
+    }))
 })
 
 login_model = auth_ns.model("Login", {
     "email": fields.String(required=True),
     "password": fields.String(required=True)
 })
-def get_serializer():
-    """Helper to create serializer inside app context"""
-    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
 
-# ---------- Admin user model (for create/edit) ----------
 user_model = admin_ns.model("User", {
     "id": fields.Integer,
     "first_name": fields.String,
@@ -47,38 +51,54 @@ user_model = admin_ns.model("User", {
     "email": fields.String,
     "mobile": fields.String,
     "role": fields.String,
-    "password": fields.String  # provided when creating user
+    "password": fields.String
 })
 
-# In-memory temporary store for pending registrations (OK for demo)
-pending_users = {}
+def get_serializer():
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
 
 # ---------- REGISTER (send OTP) ----------
-
-@auth_ns.route("/register")
+@auth_ns.route('/register')
 class Register(Resource):
     @auth_ns.expect(register_model)
     def post(self):
-        data = auth_ns.payload
-        if not data or not data.get("email"):
-            return {"message": "Email required"}, 400
-
-        if User.query.filter_by(email=data["email"]).first():
-            return {"message": "User already exists"}, 400
-        
+        print("Received request:", request.form, request.files)
+        data = request.form.to_dict()
+        print("Parsed data:", data)
+        if User.query.filter_by(email=data.get('email')).first():
+            return {'message': 'User exists'}, 400
+        profile_pic_path = None
+        if 'profile_pic' in request.files:
+            file = request.files['profile_pic']
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                upload_dir = os.path.join('static', 'Uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                file.save(os.path.join(upload_dir, filename))
+                profile_pic_path = f"Uploads/{filename}"
+        # Generate 6-digit OTP
+        otp = ''.join(random.choices(string.digits, k=6))
         serializer = get_serializer()
-        otp = serializer.dumps(data["email"], salt="otp-salt")[:6]
-        token = serializer.dumps(data, salt="register-salt")
-
-        pending_users[data["email"]] = {"otp": otp, "data": data}
-
-        msg = Message("OTP Verification",
-                      sender=current_app.config["MAIL_USERNAME"],
-                      recipients=[data["email"]])
-        msg.body = f"Your OTP is {otp}"
+        # Store OTP and user data in token
+        token_data = {
+            'email': data['email'],
+            'otp': otp,
+            'first_name': data['first_name'],
+            'last_name': data['last_name'],
+            'password': data['password'],
+            'mobile': data.get('mobile'),
+            'profile_pic': profile_pic_path
+        }
+        token = serializer.dumps(token_data, salt='register-salt')
+        msg = Message('OTP Verification', sender=current_app.config['MAIL_USERNAME'], recipients=[data['email']])
+        msg.body = f'Your OTP is {otp}'
         mail.send(msg)
-
-        return {"message": "OTP sent", "token": token}, 201
+        print("Generated OTP:", otp, "Token:", token)
+        return {
+            'message': 'OTP sent',
+            'token': token,
+            'user_data': token_data  # Send user_data for frontend
+        }, 201
 
 # ---------- VERIFY OTP (finalize registration) ----------
 @auth_ns.route("/verify-otp")
@@ -86,34 +106,28 @@ class VerifyOTP(Resource):
     @auth_ns.expect(verify_model)
     def post(self):
         data = auth_ns.payload
+        print("Received verify-otp payload:", data)
         serializer = get_serializer()
         try:
-            pending_data = serializer.loads(data["token"], salt="register-salt", max_age=600)
-            email = pending_data["email"]
-
-            # check we have a pending OTP for this email
-            if email not in pending_users:
-                return {"message": "No pending registration"}, 400
-
-            if pending_users[email]["otp"] != data["otp"]:
+            token_data = serializer.loads(data["token"], salt="register-salt", max_age=600)
+            print("Deserialized token_data:", token_data)
+            if token_data["otp"] != data["otp"]:
                 return {"message": "Invalid OTP"}, 400
-
-            hashed_pw = generate_password_hash(pending_data["password"])
+            hashed_pw = generate_password_hash(token_data["password"])
             user = User(
-                profile_pic=pending_data.get("profile_pic"),
-                first_name=pending_data["first_name"],
-                last_name=pending_data["last_name"],
-                email=pending_data["email"],
+                profile_pic=token_data.get("profile_pic"),
+                first_name=token_data["first_name"],
+                last_name=token_data["last_name"],
+                email=token_data["email"],
                 password=hashed_pw,
-                mobile=pending_data.get("mobile"),
+                mobile=token_data.get("mobile"),
                 role="user"
             )
             db.session.add(user)
             db.session.commit()
-            del pending_users[email]
-
             return {"message": "Registered successfully"}, 201
         except Exception as e:
+            print("Verification error:", str(e))
             return {"message": f"Error: {str(e)}"}, 400
 
 # ---------- LOGIN (access + refresh tokens) ----------

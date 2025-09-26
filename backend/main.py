@@ -2,7 +2,7 @@ from flask import Flask
 from flask_restx import Api
 from dotenv import load_dotenv
 import os
-
+from flask_cors import CORS
 from extensions import db, jwt, mail   # import our extensions
 
 # Load .env
@@ -26,8 +26,9 @@ jwt.init_app(app)
 mail.init_app(app)
 
 # Create API
-api = Api(app)
-
+#api = Api(app)
+CORS(app)  # Added for frontend-backend communication
+api = Api(app, version='1.0', title='Auth API', description='Authentication and RBAC API')
 # Import namespaces AFTER api is created
 from routes import auth_ns, admin_ns  
 api.add_namespace(auth_ns, path="/auth")
