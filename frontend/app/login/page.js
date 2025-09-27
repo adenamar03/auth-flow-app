@@ -3,10 +3,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+// Next.js utilities and  API + JWT decoding
 import { useRouter } from 'next/navigation';
 import api from '../../utils/axiosInstance';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
+
+// Validation schema for login form
 
 const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -14,6 +17,7 @@ const schema = yup.object({
 });
 
 export default function Login() {
+   // Form state
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: yupResolver(schema) });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,13 +30,15 @@ export default function Login() {
       console.log('Attempting login with:', data);
       const res = await api.post('/auth/login', data);
       console.log('Login response:', res.data);
+      // Store tokens in local storage
       localStorage.setItem('access_token', res.data.access_token);
       localStorage.setItem('refresh_token', res.data.refresh_token);
+       // Decode role and redirect accordingly
       const decoded = jwtDecode(res.data.access_token);
       if (decoded.role === 'super_admin') {
         router.push('/dashboard');
       } else {
-        router.push('/welcome'); // Redirect regular users to welcome page
+        router.push('/welcome'); // Redirect regular users to welcome page instead of admin dashboard
       }
     } catch (err) {
       console.error('Login error:', err.response || err);
@@ -41,7 +47,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+//---------------------------UI--------------------------------------------->>
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-teal-900 to-teal-500 p-4 md:flex-row flex-col">
       {/* Left Panel: Create Account */}

@@ -5,10 +5,27 @@ import { jwtDecode } from 'jwt-decode';
 import Link from 'next/link';
 import './globals.css';
 
+/**
+ * RootLayout Component
+ * --------------------
+ * - This is the main layout wrapper for all pages in the app.
+ * - It contains the navigation bar (header) and handles authentication state.
+ * - Uses JWT token to determine if a user is authenticated and whether they are a super admin.
+ */
+
+
 export default function RootLayout({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Tracks if user is logged in
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false); // Tracks if user is logged in as super admin
   const router = useRouter();
+
+
+/**
+   * Runs once when component mounts:
+   * - Checks for `access_token` in localStorage
+   * - Decodes it to get user role
+   * - Updates state accordingly
+   */
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -16,13 +33,22 @@ export default function RootLayout({ children }) {
       try {
         const decoded = jwtDecode(token);
         setIsAuthenticated(true);
-        setIsSuperAdmin(decoded.role === 'super_admin');
+        setIsSuperAdmin(decoded.role === 'super_admin'); // Only super_admin sees Dashboard link
       } catch (err) {
+        // If token is invalid, reset auth state
+
         setIsAuthenticated(false);
         setIsSuperAdmin(false);
       }
     }
   }, []);
+
+  /**
+   * Logs out the user:
+   * - Clears tokens from localStorage
+   * - Resets authentication state
+   * - Redirects to login page
+   */
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');

@@ -1,9 +1,18 @@
+"""
+main.py
+------
+Main application entry point.
+Configures the Flask app, initializes extensions, and registers API namespaces.
+"""
+
 from flask import Flask
 from flask_restx import Api
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS
-from extensions import db, jwt, mail   # import our extensions
+
+# Import extensions (db, jwt, mail) from extensions.py
+from extensions import db, jwt, mail   
 
 # Load .env
 load_dotenv()

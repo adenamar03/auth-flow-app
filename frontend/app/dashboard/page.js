@@ -7,6 +7,8 @@ import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import api from '../../utils/axiosInstance';
 
+//  Validation schema for user form (create/edit)
+// Using Yup for field validation
 const userSchema = yup.object({
   first_name: yup.string().required('First name is required'),
   last_name: yup.string().required('Last name is required'),
@@ -16,17 +18,27 @@ const userSchema = yup.object({
   role: yup.string().oneOf(['user', 'super_admin'], 'Role must be user or super_admin').required('Role is required'),
 });
 
+ //  Local state
 export default function Dashboard() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [users, setUsers] = useState([]);           // List of users fetched from API
+  const [loading, setLoading] = useState(true);    // Loading state for spinner
+  const [error, setError] = useState('');                 // Error messages (auth/CRUD errors)
+  const [modalOpen, setModalOpen] = useState(false);     // Controls create/edit modal visibility
+  const [editingUser, setEditingUser] = useState(null); // Stores user being edited (null = create mode)
+  const [deleteConfirm, setDeleteConfirm] = useState(null);  // Stores user ID to delete confirmation
+
+
   const router = useRouter();
+
+  //  React Hook Form setup with Yup validation
   const { register, handleSubmit, reset, formState: { errors } } = useForm({ resolver: yupResolver(userSchema) });
 
-  // Fetch users
+  // -----------------------------
+  //  API CALLS (CRUD operations)-------------------------------------------------------------------------
+  // -----------------------------
+
+  // Fetch all users
+  
   const fetchUsers = async () => {
     try {
       const res = await api.get('/admin/users');
@@ -37,6 +49,10 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  // -----------------------------
+  //  AUTHENTICATION CHECK          -----------------------------------------------------------------------
+  // -----------------------------
 
   // Check auth on mount
   useEffect(() => {
@@ -111,12 +127,17 @@ export default function Dashboard() {
     }
   };
 
-  // Logout function
+// -----------------------------
+  //  LOGOUT FUNCTION         -------------------------------------------------------------------------
+  // -----------------------------
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     router.push('/login');
   };
+ // -----------------------------
+  //  LOADING + ERROR UI STATES  ----------------------------------------------------------------------------
+  // -----------------------------
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-teal-900 to-teal-500">
@@ -128,7 +149,7 @@ export default function Dashboard() {
       <p className="text-red-500 bg-red-100 p-4 rounded-lg shadow-md text-center max-w-md">{error}</p>
     </div>
   );
-
+//<<------------------------UI------------------------------->>
   return (
     <div className="min-h-screen bg-gradient-to-r from-teal-900 to-teal-500 p-4">
       <div className="max-w-7xl mx-auto">

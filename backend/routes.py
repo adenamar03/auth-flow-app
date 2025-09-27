@@ -1,3 +1,11 @@
+"""
+routes.py
+---------
+Defines API routes for authentication (register, login, verify OTP, refresh tokens)
+and admin operations (manage users).
+Uses Flask-RESTX for documentation + organization.
+"""
+
 from flask_restx import Namespace, Resource, fields
 from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -5,18 +13,25 @@ from itsdangerous import URLSafeTimedSerializer
 from flask import request, current_app
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+
 from functools import wraps
 import os
+
 import random
 import string
 
 from extensions import db, mail
 from models import User
 
+# Namespaces for organizing routes
 auth_ns = Namespace("auth", description="Authentication APIs")
 admin_ns = Namespace("admin", description="Admin operations")
 
-# Models (unchanged)
+
+# ------------------- Swagger Models -------------------
+# These define request/response schemas for documentation
+
+
 register_model = auth_ns.model("Register", {
     "profile_pic": fields.String,
     "first_name": fields.String(required=True),
@@ -54,19 +69,31 @@ user_model = admin_ns.model("User", {
     "password": fields.String
 })
 
+# ------------------- Helpers -------------------
+
 def get_serializer():
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
 
-# ---------- REGISTER (send OTP) ----------
+# =====================================================
+#                AUTHENTICATION ROUTES
+# =====================================================
+
+# ---------- REGISTER (Step 1: send OTP) ----------
+
 @auth_ns.route('/register')
 class Register(Resource):
     @auth_ns.expect(register_model)
     def post(self):
+        """
+        Step 1: Register a new user.
+        - Accepts user data + optional profile pic
+        - Sends OTP to email for verification
+        """
         print("Received request:", request.form, request.files)
         data = request.form.to_dict()
         print("Parsed data:", data)
         if User.query.filter_by(email=data.get('email')).first():
-            return {'message': 'User exists'}, 400
+            return {'message': 'User exists'}, 400 # Prevent duplicate registration
         profile_pic_path = None
         if 'profile_pic' in request.files:
             file = request.files['profile_pic']
@@ -90,6 +117,7 @@ class Register(Resource):
             'profile_pic': profile_pic_path
         }
         token = serializer.dumps(token_data, salt='register-salt')
+        # Send OTP via email
         msg = Message('OTP Verification', sender=current_app.config['MAIL_USERNAME'], recipients=[data['email']])
         msg.body = f'Your OTP is {otp}'
         mail.send(msg)
@@ -101,10 +129,17 @@ class Register(Resource):
         }, 201
 
 # ---------- VERIFY OTP (finalize registration) ----------
+
 @auth_ns.route("/verify-otp")
 class VerifyOTP(Resource):
     @auth_ns.expect(verify_model)
     def post(self):
+        """
+        Step 2: Verify OTP and finalize registration.
+        - Validates token + OTP
+        - Hashes password
+        - Saves user in DB
+        """
         data = auth_ns.payload
         print("Received verify-otp payload:", data)
         serializer = get_serializer()
@@ -131,14 +166,21 @@ class VerifyOTP(Resource):
             return {"message": f"Error: {str(e)}"}, 400
 
 # ---------- LOGIN (access + refresh tokens) ----------
+
 @auth_ns.route("/login")
 class Login(Resource):
     @auth_ns.expect(login_model)
     def post(self):
+        """
+        Login user with email + password.
+        - Returns access + refresh tokens
+        - Tokens include role + email claims
+        """
         data = auth_ns.payload
         if not data:
             return {"message": "Missing credentials"}, 400
-
+          
+        #validate credentials  
         email = data.get("email")
         password = data.get("password")
         user = User.query.filter_by(email=email).first()
@@ -175,7 +217,12 @@ class TokenRefresh(Resource):
         return {"access_token": access}, 200
 
 
-# ---------- Admin helper decorator ----------
+# =====================================================
+#                ADMIN ROUTES
+# =====================================================
+
+# ---------- Admin-only decorator ----------
+
 from flask_jwt_extended import get_jwt
 
 def admin_required(fn):
@@ -191,11 +238,13 @@ def admin_required(fn):
 
 
 # ---------- ADMIN: list and create users ----------
+
 @admin_ns.route("/users")
 class AdminUsers(Resource):
     @jwt_required()
     @admin_required
     def get(self):
+        """List all users (admin only)."""
         users = User.query.all()
         out = []
         for u in users:
@@ -212,6 +261,7 @@ class AdminUsers(Resource):
     @admin_required
     @admin_ns.expect(user_model)
     def post(self):
+        """Create a new user (admin only)."""
         data = admin_ns.payload
         if not data or not data.get("email"):
             return {"message": "email required"}, 400
@@ -238,6 +288,7 @@ class AdminUsers(Resource):
 class AdminUser(Resource):
     @admin_required
     def delete(self, id):
+        """Delete user by ID (admin only)."""
         u = User.query.get_or_404(id)
         db.session.delete(u)
         db.session.commit()
@@ -246,6 +297,7 @@ class AdminUser(Resource):
     @admin_required
     @admin_ns.expect(user_model)
     def put(self, id):
+         """Update user by ID (admin only)."""
         data = admin_ns.payload
         u = User.query.get_or_404(id)
         u.first_name = data.get("first_name", u.first_name)

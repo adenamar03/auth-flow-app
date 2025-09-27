@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 import api from '../../utils/axiosInstance';
 import Link from 'next/link';
 
+/* ------------------------- Validation Schemas ------------------------- */
+// Registration schema: validates profile picture, names, email, password, and mobile
+
 const schema = yup.object({
   profile_pic: yup.mixed().test('file', 'Invalid file', value => !value || (value && value[0] instanceof File)).optional(),
   first_name: yup.string().required('First name is required'),
@@ -16,29 +19,35 @@ const schema = yup.object({
   mobile: yup.string().optional(),
 });
 
+// OTP schema: ensures OTP is exactly 6 digits
 const otpSchema = yup.object({
   otp: yup.string().matches(/^\d{6}$/, 'OTP must be exactly 6 digits').required('OTP is required'),
 });
 
+/* ------------------------- Register Component ------------------------- */
+
 export default function Register() {
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: yupResolver(schema) });
+  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: yupResolver(schema) }); // Form instances: one for registration, one for OTP verification
   const otpForm = useForm({ resolver: yupResolver(otpSchema) });
-  const [otpStep, setOtpStep] = useState(false);
-  const [token, setToken] = useState('');
-  const [userData, setUserData] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+   // Component state
+  const [otpStep, setOtpStep] = useState(false);     // Switch between registration and OTP form
+  const [token, setToken] = useState('');           // Token returned from backend after registration
+  const [userData, setUserData] = useState(null);  // User data to send with OTP verification
+  const [error, setError] = useState('');         // Error messages (registration/OTP failure)
+  const [loading, setLoading] = useState(false); // Loading state for buttons
   const [preview, setPreview] = useState(null); // For profile pic preview
   const router = useRouter();
 
-  // Handle profile pic preview
+
+  /* ------------------------- Handlers ------------------------- */
+  // Show profile picture preview when a file is selected
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setPreview(URL.createObjectURL(file));
     }
   };
-
+  // Submit registration form: send user data + profile pic to backend
   const onSubmit = async (data) => {
     setLoading(true);
     setError('');
@@ -48,9 +57,13 @@ export default function Register() {
         if (key === 'profile_pic' && value && value[0]) formData.append(key, value[0]);
         else if (value) formData.append(key, value);
       });
+
+      // Send registration request
       const res = await api.post('/auth/register', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
+    // Save token & user data for OTP step
       setToken(res.data.token);
       setUserData(res.data.user_data);
       setOtpStep(true);
@@ -61,7 +74,7 @@ export default function Register() {
       setLoading(false);
     }
   };
-
+// Submit OTP form: verify OTP and log the user in
   const verifyOtp = async (otpData) => {
     setLoading(true);
     setError('');
@@ -71,6 +84,8 @@ export default function Register() {
         token,
         user_data: userData
       });
+
+      // Save tokens in localStorage for session persistence
       localStorage.setItem('access_token', res.data.access_token);
       localStorage.setItem('refresh_token', res.data.refresh_token);
       router.push('/welcome'); // Redirect to welcome page after OTP verification
@@ -80,7 +95,7 @@ export default function Register() {
       setLoading(false);
     }
   };
-
+/* ------------------------- UI ------------------------- */
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-teal-900 to-teal-500 p-4 md:flex-row flex-col">
       {/* Left Panel: Welcome Back */}

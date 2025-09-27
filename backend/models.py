@@ -1,3 +1,10 @@
+"""
+models.py
+---------
+Defines the database models for the application.
+Currently includes the User model for authentication and role-based access control.
+"""
+
 from datetime import datetime
 from extensions import db
 
