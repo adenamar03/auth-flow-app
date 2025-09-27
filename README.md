@@ -188,7 +188,7 @@ Below are the detailed screenshots of the application in action:
 
 ### User2 phone num Edited successfully by Admin 
 
-![Edited successfully ](./screenshots/06_new_phone_num_updated_for user2.png)
+![Edited successfully ](./screenshots/06_new_phone_num_updated_for_user2.png)
 
 ### Admin deleting a user
 
