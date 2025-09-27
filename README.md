@@ -110,11 +110,11 @@ Tailwind CSS
 jwt-decode
 
 
+## Screenshots 
 
-login.png: Login page
-register.png: Registration form
-otp.png: OTP verification form
-dashboard.png: Admin dashboard with user management
+### Registeration page
+![Registeration page](./screenshots/001_Regsteration_page_deign.png)
+
 
 # How to use 
 
@@ -122,6 +122,8 @@ Register: Go to /register, fill in details, upload optional profile picture, rec
 Login: Use /login with credentials to get JWT tokens.
 Dashboard: Access /dashboard as Super Admin to manage users (CRUD operations).
 RBAC: Only Super Admins can access the dashboard; regular users are redirected to /login.
+
+
 
 # Notes
 
