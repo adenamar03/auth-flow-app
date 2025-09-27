@@ -131,22 +131,7 @@ Password: adminpass
 - Tailwind CSS
 - jwt-decode
 
-## Screenshots
 
-Below are screenshots of the application in action:
-
-### Registration Page
-
-![Registration Page](./screenshots/001_Registeration_page_design.png)
-
-### Login page 
-
-![Login Page](./screenshots/01_01_Loginpage_design.png)
-
-
-### This is Admin logging in  
-
-![Admin logging in ](./screenshots/01_admin_logging_in.png)
 
 # How to use 
 
@@ -163,10 +148,84 @@ Navigate to /login, enter your email and password, and submit to receive JWT tok
 
 Log in as the Super Admin to access /dashboard and manage users (create, view, edit, delete).
 
-
 - RBAC:
 
 Only Super Admins can access the dashboard; regular users are redirected to the welcome page.
+
+
+## Screenshots
+
+Below are the detailed screenshots of the application in action: 
+
+### Registeration Page
+
+![Registration Page](./screenshots/001_Registeration_page_design.png)
+
+### Login page 
+
+![Login Page](./screenshots/01_01_Loginpage_design.png)
+
+
+### This is Admin logging in  
+
+![Admin logging in ](./screenshots/01_admin_logging_in.png)
+
+### This is Admin Dashboard  
+
+![Admin Dashboard ](./screenshots/02_Admin_dashboard.png)
+
+### This is Admin creating a new user
+
+![Admin creating new user ](./screenshots/03_admin_creating_newuser.png)
+
+### New user successfully created in admin dashboard  
+
+![New user created ](./screenshots/04_new_user_successfully_created.png)
+
+### Admin editing a user
+
+![Admin editing a user ](./screenshots/05_editing_a_user.png)
+
+### User2 phone num Edited successfully by Admin 
+
+![Edited successfully ](./screenshots/06_new_phone_num_updated_for user2.png)
+
+### Admin deleting a user
+
+![Deleting a user ](./screenshots/07_deleting_a_ser_wth_id_3.png)
+
+### User deleted successfully
+
+![deleted successfully ](./screenshots/08_successfully_deleted_user.png)
+
+### Registeration by a new user
+
+![registering a new user ](./screenshots/09_registering_a_new_user.png)
+
+### Error if fields missing
+
+![error if fields missing ](./screenshots/10_gives_error_if_some_fields_are_missing.png)
+
+### Successfully received OTP
+
+![ received otp ](./screenshots/11_successfully_received_otp.png)
+
+### Verifying OTP
+
+![Verfying OTP](./screenshots/12_verifying_otp.png)
+
+### Log in user account after registeration
+
+![Log in user account after registeration ](./screenshots/13_logging_in_user_account.png)
+
+### After log in user is directed to Welcome page not Admin Dashoard
+
+![User directed here ](./screenshots/14_after_login_user_is_directed_here.png)
+
+### New user displayed in Admin Dashboard
+
+![New user appeared in Admin Dashboard ](./screenshots/15_new_user_added_through_otp_verification.png.png)
+
 
 
 # Notes
