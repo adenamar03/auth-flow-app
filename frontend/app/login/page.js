@@ -5,6 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useRouter } from 'next/navigation';
 import api from '../../utils/axiosInstance';
+import Link from 'next/link';
 
 const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -30,52 +31,56 @@ export default function Login() {
       router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err.response || err);
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Login failed. Invalid credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        {loading && (
-          <div className="flex justify-center mb-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-teal-900 to-teal-500 p-4 md:flex-row flex-col">
+      {/* Left Panel: Create Account */}
+      <div className="flex flex-col items-center justify-center bg-teal-500 p-8 rounded-t-lg md:rounded-l-lg md:rounded-tr-none text-white md:w-1/2 w-full h-1/2 md:h-auto">
+        <h1 className="text-3xl font-bold mb-4">Hello, Friend!</h1>
+        <p className="text-center mb-6">Enter your details and start your journey with us.</p>
+        <Link href="/register">
+          <button className="bg-white text-teal-500 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+            Sign Up
+          </button>
+        </Link>
+      </div>
+
+      {/* Right Panel: Login Form */}
+      <div className="bg-white p-8 rounded-r-lg shadow-lg md:w-1/2 w-full h-auto">
+        <h2 className="text-2xl font-bold text-center mb-6 text-teal-700">Sign in to Auth App</h2>
+        {error && (
+          <p className="text-red-500 mb-4 text-center bg-red-100 p-2 rounded">{error}</p>
         )}
         <form onSubmit={handleSubmit(onSubmit)}>
+          <p className="text-center mb-6 text-gray-600">Please enter your credentials to access your account</p>
+          {/* Fields */}
           {['email', 'password'].map(field => (
             <div key={field} className="mb-4">
+              <label className="block text-gray-700 mb-1">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
               <input
                 {...register(field)}
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-300 rounded text-gray-900 focus:border-teal-500 outline-none"
                 type={field === 'password' ? 'password' : 'email'}
               />
               {errors[field] && <p className="text-red-500 text-sm">{errors[field].message}</p>}
             </div>
           ))}
+          <Link href="/forgot-password" className="text-teal-500 text-sm mb-4 block text-center hover:underline">
+            Forgot your password?
+          </Link>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
             disabled={loading}
+            className="w-full bg-teal-500 text-white py-2 rounded-full font-semibold hover:bg-teal-600 disabled:bg-teal-300 transition"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-        {/* Test button to debug router */}
-        <button
-          onClick={() => {
-            console.log('Test redirect to /dashboard');
-            router.push('/dashboard');
-          }}
-          className="w-full mt-4 bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
-        >
-          Test Redirect
-        </button>
       </div>
     </div>
   );
