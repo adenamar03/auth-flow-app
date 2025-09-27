@@ -27,9 +27,9 @@ There are 2 main directories in this repository : frontend and backend
    cd backend
 
 2. Create and activate a virtual environment:
-  ```bash
-python -m venv venv
-.\venv\Scripts\activate  # Windows
+   ```bash
+   python -m venv venv 
+   .\venv\Scripts\activate  # Windows
 
 3. Install dependencies:
 
@@ -114,12 +114,10 @@ Tailwind CSS
 jwt-decode
 
 
-## Screenshots 
+## Screenshots
 
-### Registeration page
-
-
-![Registration Page](./screenshots/001_Regsteration_page_design.png)
+### Registration Page
+![Registration Page](./screenshots/001_Registeration_page_design.png)
 
 
 # How to use 
