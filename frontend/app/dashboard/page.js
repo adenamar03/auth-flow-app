@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import api from '../../utils/axiosInstance';
 
@@ -111,6 +111,13 @@ export default function Dashboard() {
     }
   };
 
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    router.push('/login');
+  };
+
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-teal-900 to-teal-500">
       <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-teal-500"></div>
@@ -129,12 +136,20 @@ export default function Dashboard() {
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-teal-700">Admin Dashboard</h1>
-            <button
-              onClick={() => { setModalOpen(true); setEditingUser(null); reset(); }}
-              className="bg-teal-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-teal-600 transition"
-            >
-              Create User
-            </button>
+            <div className="space-x-4">
+              <button
+                onClick={() => { setModalOpen(true); setEditingUser(null); reset(); }}
+                className="bg-teal-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-teal-600 transition"
+              >
+                Create User
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+            </div>
           </div>
           {error && <p className="text-red-500 mt-4 bg-red-100 p-2 rounded">{error}</p>}
         </div>

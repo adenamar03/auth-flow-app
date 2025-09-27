@@ -71,7 +71,9 @@ export default function Register() {
         token,
         user_data: userData
       });
-      router.push('/login');
+      localStorage.setItem('access_token', res.data.access_token);
+      localStorage.setItem('refresh_token', res.data.refresh_token);
+      router.push('/welcome'); // Redirect to welcome page after OTP verification
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid OTP. Please check and try again.');
     } finally {
@@ -100,12 +102,11 @@ export default function Register() {
         )}
         {!otpStep ? (
           <form onSubmit={handleSubmit(onSubmit)}>
-            <p className="text-center mb-6 text-gray-600">Please enter the following information to register your acount</p>
+            <p className="text-center mb-6 text-gray-600">Please enter the following information to register your account</p>
             {/* Profile Picture Upload with Preview */}
             <div className="mb-4">
               <label className="block text-gray-800 mb-1">Profile Picture</label>
-              <input type="file" {...register('profile_pic')} onChange={handleFileChange} accept="image/*" className="w-full p-2 border border-gray-100 rounded  text-gray-600"
-  />
+              <input type="file" {...register('profile_pic')} onChange={handleFileChange} accept="image/*" className="w-full p-2 border border-gray-100 rounded text-gray-600" />
               {preview && <img src={preview} alt="Preview" className="mt-2 w-20 h-20 rounded-full mx-auto" />}
               {errors.profile_pic && <p className="text-red-500 text-sm">{errors.profile_pic.message}</p>}
             </div>
@@ -116,7 +117,6 @@ export default function Register() {
                 <input
                   {...register(field)}
                   className="w-full p-2 border border-gray-300 rounded text-gray-900 focus:border-teal-500 outline-none"
-
                   type={field === 'password' ? 'password' : 'text'}
                 />
                 {errors[field] && <p className="text-red-500 text-sm">{errors[field].message}</p>}
@@ -138,7 +138,7 @@ export default function Register() {
                 <label className="block text-gray-700 mb-1">OTP</label>
                 <input
                   {...otpForm.register('otp')}
-                  className="w-full p-2 border rounded focus:border-teal-500 outline-none"
+                  className="w-full p-2 border border-gray-300 rounded text-gray-900 focus:border-teal-500 outline-none"
                   type="text"
                 />
                 {otpForm.formState.errors.otp && <p className="text-red-500 text-sm">{otpForm.formState.errors.otp.message}</p>}

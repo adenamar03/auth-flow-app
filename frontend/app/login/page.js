@@ -6,6 +6,7 @@ import * as yup from 'yup';
 import { useRouter } from 'next/navigation';
 import api from '../../utils/axiosInstance';
 import Link from 'next/link';
+import { jwtDecode } from 'jwt-decode';
 
 const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -27,8 +28,12 @@ export default function Login() {
       console.log('Login response:', res.data);
       localStorage.setItem('access_token', res.data.access_token);
       localStorage.setItem('refresh_token', res.data.refresh_token);
-      console.log('Tokens stored, redirecting to /dashboard');
-      router.push('/dashboard');
+      const decoded = jwtDecode(res.data.access_token);
+      if (decoded.role === 'super_admin') {
+        router.push('/dashboard');
+      } else {
+        router.push('/welcome'); // Redirect regular users to welcome page
+      }
     } catch (err) {
       console.error('Login error:', err.response || err);
       setError(err.response?.data?.message || 'Login failed. Invalid credentials.');
@@ -41,10 +46,10 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-teal-900 to-teal-500 p-4 md:flex-row flex-col">
       {/* Left Panel: Create Account */}
       <div className="flex flex-col items-center justify-center bg-teal-500 p-8 rounded-t-lg md:rounded-l-lg md:rounded-tr-none text-white md:w-1/2 w-full h-1/2 md:h-auto">
-        <h1 className="text-3xl font-bold mb-4">Hello, Friend!</h1>
-        <p className="text-center mb-6">Enter your details and start your journey with us.</p>
+        <h1 className="text-3xl font-bold mb-2">Hello, Friend!</h1>
+        <p className="text-center mb-6">Enter your personal details and start your journey with us.</p>
         <Link href="/register">
-          <button className="bg-white text-teal-500 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+          <button className="bg-white text-teal-500 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition">
             Sign Up
           </button>
         </Link>
