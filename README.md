@@ -224,7 +224,7 @@ Below are the detailed screenshots of the application in action:
 
 ### New user displayed in Admin Dashboard
 
-![New user appeared in Admin Dashboard ](./screenshots/15_new_user_added_through_otp_verification.png.png)
+![New user appeared in Admin Dashboard ](./screenshots/15_new_user_added_through_otp_verification.png)
 
 
 
