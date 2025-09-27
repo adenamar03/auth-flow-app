@@ -8,54 +8,65 @@ A Flask (Python) backend providing APIs for authentication, authorization, and u
 A Next.js frontend that consumes the backend APIs and provides a user-friendly interface.
 Database (SQlite)
 
-## Features :
+## Features
 
-Features include:
-- User registration with OTP email verification and login
-- JWT-based authentication with automatic token refresh
-- Admin dashboard for Super Admin to manage users (create, read, update, delete).
-- Role-based access control ensuring only Super Admins can access the dashboard.
-- Centralized API handling with Axios interceptors on the frontend
+- **User Authentication:**
+  - Registration with optional profile picture, first name, last name, email, password, and mobile number, requiring OTP email verification.
+  - Login using email and password with JWT token issuance.
+  - OTP verification via email to complete registration.
+- **Token Management:**
+  - Implementation of JWT Access and Refresh tokens for secure authentication.
+  - Automatic token refresh handled by Axios interceptors on the frontend.
+- **Role-Based Access Control (RBAC):**
+  - Predefined Super Admin credentials for administrative access.
+  - Super Admin capability to create, view, edit, and delete user accounts.
+  - Regular users can log in but are restricted from admin functionalities.
+- **Admin Dashboard:**
+  - A web-based dashboard for Super Admins to manage all users (CRUD operations).
+  - Role-based redirection ensures only authorized access.
 
-## Setup Instructions
+## Setup Instructions: 
 
-There are 2 main directories in this repository : frontend and backend
+This repository contains two main directories: `frontend` and `backend`. Follow the steps below to set up and run the application.
 
-### Backend
-1. Navigate to `backend` directory:
+### Backend Setup
+
+1. **Navigate to the Backend Directory:**
    ```bash
    cd backend
 
-2. Create and activate a virtual environment:
+2. **Create and activate a virtual environment:**
    ```bash
    python -m venv venv 
    .\venv\Scripts\activate  # Windows
 
-3. Install dependencies:
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
 
-pip install -r requirements.txt
+4. **Create a .env file in backend:**
+Create a .env file in the backend directory with the following
 
-4. Create a .env file in backend:
+- SECRET_KEY=your_secret_key
+- DATABASE_URI=sqlite:///site.db
+- JWT_SECRET_KEY=your_jwt_secret_key
+- MAIL_SERVER=smtp.gmail.com
+- MAIL_PORT=587
+- MAIL_USE_TLS=True
+- MAIL_USERNAME=your_email@gmail.com
+- MAIL_PASSWORD=your_gmail_app_password
 
-SECRET_KEY=your_secret_key
-DATABASE_URI=sqlite:///site.db
-JWT_SECRET_KEY=your_jwt_secret_key
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_gmail_app_password
+**notes:**
+- Generate SECRET_KEY and JWT_SECRET_KEY using a secure random string generator (e.g., openssl rand -hex 32).
+- Use a Gmail App Password for MAIL_PASSWORD (generate at https://myaccount.google.com/security).
+- Ensure email settings are valid for OTP delivery.
 
 
-5. Use a Gmail App Password for MAIL_PASSWORD (generate at https://myaccount.google.com/security).
+5. Run the backend:
+   ```bash
+   python main.py
 
-6. Ensure SECRET_KEY and JWT_SECRET_KEY are secure, random strings.
-
-7. Run the backend:
-
-8. python main.py
-
-9. The API will be available at http://localhost:5000.
+The API will be available at http://localhost:5000.
 
 
 ## Frontend Setup
