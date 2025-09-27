@@ -25,10 +25,14 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const newToken = await refreshAccessToken();
+      const newToken = await refreshAccessToken(); // Pass router if needed in component
       if (newToken) {
         originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-        return api(originalRequest); // retry original request
+        return api(originalRequest); // Retry original request
+      }
+      // Redirect to login if refresh fails
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
@@ -36,4 +40,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
