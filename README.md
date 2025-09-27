@@ -56,13 +56,13 @@ Create a .env file in the backend directory with the following
 - MAIL_USERNAME=your_email@gmail.com
 - MAIL_PASSWORD=your_gmail_app_password
 
-**notes:**
+**Notes:**
 - Generate SECRET_KEY and JWT_SECRET_KEY using a secure random string generator (e.g., openssl rand -hex 32).
 - Use a Gmail App Password for MAIL_PASSWORD (generate at https://myaccount.google.com/security).
 - Ensure email settings are valid for OTP delivery.
 
 
-5. Run the backend:
+5. **Run the backend:**
    ```bash
    python main.py
 
@@ -71,77 +71,96 @@ The API will be available at http://localhost:5000.
 
 ## Frontend Setup
 
-1. Navigate to frontend directory:
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
 
-cd frontend
+2. **Install dependencies:**
+    ```bash
+    npm install
 
-2. Install dependencies:
-
-npm install
 Next.js, React, react-hook-form, yup, axios
 
-3. Create a .env.local file in frontend:
+3. **Configure Environment Variables:**
+Create a .env.local file in the frontend directory:
 
-NEXT_PUBLIC_API_URL=http://localhost:5000
+ - NEXT_PUBLIC_API_URL=http://localhost:5000
 
-4. Run the frontend:
+Ensure the API URL matches your backend server address.
 
-npm run dev
+4. **Run the frontend:**
+   ```bash
+   npm run dev
 
 The app will be available at http://localhost:3000.
 
 ## How to Clone this repo and Run
 
-1. Clone the repository:
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/auth-flow-rbac.git
+    cd auth-flow-rbac
 
-git clone https://github.com/yourusername/auth-flow-rbac.git
-cd auth-flow-rbac
-2. Follow the setup instructions above for backend and frontend.
+2. **Follow the setup instructions above for backend and frontend**
+ 
+ Complete the backend and frontend setup steps outlined above.
 
-3. Default Super Admin credentials:
+3. **Default Super Admin credentials:**
+  **SuperAdmin**
 Email: admin@example.com
 Password: adminpass
 
-4. Dependencies
+4. **Dependencies**
+**Backend:**
 
-# Backend:
+- Flask
+- Flask-RESTX
+- Flask-SQLAlchemy
+- Flask-JWT-Extended
+- Flask-Mail
+- itsdangerous
+- python-dotenv
+- flask-cors
 
-Flask
-Flask-RestX
-Flask-SQLAlchemy
-Flask-JWT-Extended
-Flask-Mail
-itsdangerous
-python-dotenv
-flask-cors
+**Frontend:**
 
-# Frontend:
-
-Next.js
-Axios
-React-Hook-Form
-Yup
-Tailwind CSS
-jwt-decode
-
+- Next.js
+- Axios
+- React-Hook-Form
+- Yup
+- Tailwind CSS
+- jwt-decode
 
 ## Screenshots
 
+Below are screenshots of the application in action:
+
 ### Registration Page
 ![Registration Page](./screenshots/001_Registeration_page_design.png)
-
+<img src="./screenshots/001_Registeration_page_design.png.png" alt="Registration Page">
 
 # How to use 
 
-Register: Go to /register, fill in details, upload optional profile picture, receive OTP via email, verify OTP.
-Login: Use /login with credentials to get JWT tokens.
-Dashboard: Access /dashboard as Super Admin to manage users (CRUD operations).
-RBAC: Only Super Admins can access the dashboard; regular users are redirected to /login.
 
+- Register:
+Visit /register, fill in the required fields, upload an optional profile picture, and submit.
+Check your email for an OTP, enter it on the verification page, and complete registration.
+
+- Login:
+
+Navigate to /login, enter your email and password, and submit to receive JWT tokens.
+
+- Admin Dashboard:
+
+Log in as the Super Admin to access /dashboard and manage users (create, view, edit, delete).
+
+
+- RBAC:
+
+Only Super Admins can access the dashboard; regular users are redirected to the welcome page.
 
 
 # Notes
-
-Ensure email settings are correct for OTP delivery 
-For production, use httpOnly cookies instead of localStorage for JWT tokens to enhance security.
-The utils/axiosinstance.js handles automatic token refresh for expired access tokens.
+- Email Configuration: Verify MAIL_USERNAME and MAIL_PASSWORD in the .env file for OTP delivery to work.
+- For production, use httpOnly cookies instead of localStorage for JWT tokens to enhance security.
+- The utils/axiosinstance.js handles automatic token refresh for expired access tokens.
