@@ -137,16 +137,16 @@ Below are screenshots of the application in action:
 
 ### Registration Page
 
-<img src="./screenshots/001_Registeration_page_design.png." alt="Registration Page">
+![Registration Page](./screenshots/001_Registeration_page_design.png)
 
 ### Login page 
 
-<img src="./screenshots/01_01_Loginpage_design.png" alt="Registration Page">
+![Login Page](./screenshots/01_01_Loginpage_design.png)
 
-### This is Admin loggng in  
 
-<img src="./screenshots/01_admin_logging_in.png" alt="Registration Page">
+### This is Admin logging in  
 
+![Admin logging in ](./screenshots/01_admin_logging_in.png)
 
 # How to use 
 
