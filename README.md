@@ -2,16 +2,20 @@
 
 
 ## Project Description :
-A full-stack authentication system with role-based access control (RBAC) built using Flask-RestX (backend), Next.js (frontend), and SQLite (database). 
+This project is a full-stack application that implements user authentication and role-based access control (RBAC). It consists of:
+
+A Flask (Python) backend providing APIs for authentication, authorization, and user management.
+A Next.js frontend that consumes the backend APIs and provides a user-friendly interface.
+Database (SQlite)
 
 ## Features :
 
 Features include:
-- User registration with OTP email verification.
-- Login with JWT access and refresh tokens.
+- User registration with OTP email verification and login
+- JWT-based authentication with automatic token refresh
 - Admin dashboard for Super Admin to manage users (create, read, update, delete).
 - Role-based access control ensuring only Super Admins can access the dashboard.
-- Centralized Axios instance with token refresh for robust API calls.
+- Centralized API handling with Axios interceptors on the frontend
 
 ## Setup Instructions
 
@@ -23,7 +27,7 @@ There are 2 main directories in this repository : frontend and backend
    cd backend
 
 2. Create and activate a virtual environment:
-
+  ```bash
 python -m venv venv
 .\venv\Scripts\activate  # Windows
 
@@ -113,7 +117,9 @@ jwt-decode
 ## Screenshots 
 
 ### Registeration page
-![Registeration page](./screenshots/001_Regsteration_page_deign.png)
+
+
+![Registration Page](./screenshots/001_Regsteration_page_design.png)
 
 
 # How to use 
